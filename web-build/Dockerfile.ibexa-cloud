@@ -1,0 +1,4 @@
+#ddev-generated
+ENV PLATFORMSH_CLI_HOME=/usr/local/bin
+RUN curl -sfS https://cli.ibexa.cloud/installer | php
+RUN cp /root/.ibexa-cli/bin/ibexa_cloud /usr/local/bin

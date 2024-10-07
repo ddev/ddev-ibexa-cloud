@@ -1,0 +1,9 @@
+#!/bin/bash
+
+#ddev-generated
+## Description: Run ibexa_cloud CLI inside the web container
+## Usage: ibexa_cloud [flags] [args]
+## Example: "ibexa_cloud user:list" or "platform ssh" or "platform service:list"
+## ExecRaw: true
+
+ibexa_cloud "$@"
