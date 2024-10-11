@@ -85,7 +85,7 @@ teardown() {
   cd ${TESTDIR} || ( printf "unable to cd to ${TESTDIR}\n" && exit 1 )
   echo "# ddev get rfay/ddev-ibexa-cloud with project ${PROJNAME} in ${TESTDIR} ($(pwd))" >&3
   ddev get rfay/ddev-ibexa-cloud
-  ddev config --web-environment=IBEXA_CLI_TOKEN=${IBEXA_CLI_TOKEN},IBEXA_PROJECT=${IBEXA_PROJECT},IBEXA_ENVIRONMENT=pull
+  ddev config --web-environment=IBEXA_CLI_TOKEN=${IBEXA_CLI_TOKEN},IBEXA_PROJECT=${IBEXA_PROJECT:-},IBEXA_ENVIRONMENT=pull
   ddev restart >/dev/null
   echo "# pull health checks" >&3
   pull_health_checks
