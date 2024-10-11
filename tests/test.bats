@@ -79,14 +79,16 @@ teardown() {
   push_health_checks
 }
 
-## bats test_tags=release
-#@test "install from release" {
-#  set -eu -o pipefail
-#  cd ${TESTDIR} || ( printf "unable to cd to ${TESTDIR}\n" && exit 1 )
-#  echo "# ddev get rfay/ddev-ibexa-cloud with project ${PROJNAME} in ${TESTDIR} ($(pwd))" >&3
-#  ddev get rfay/ddev-ibexa-cloud
-#  ddev config global --web-environment-add=IBEXA_CLI_TOKEN=
-#  ddev config --web-environment-add=IBEXA_PROJECT=,IBEXA_ENVIRONMENT=,IBEXA_APP=
-#  ddev restart >/dev/null
-#  health_checks
-#}
+# bats test_tags=release
+@test "install from release" {
+  set -eu -o pipefail
+  cd ${TESTDIR} || ( printf "unable to cd to ${TESTDIR}\n" && exit 1 )
+  echo "# ddev get rfay/ddev-ibexa-cloud with project ${PROJNAME} in ${TESTDIR} ($(pwd))" >&3
+  ddev get rfay/ddev-ibexa-cloud
+  ddev config --web-environment=IBEXA_CLI_TOKEN=${IBEXA_CLI_TOKEN},IBEXA_PROJECT=${IBEXA_PROJECT},IBEXA_ENVIRONMENT=pull
+  ddev restart >/dev/null
+  echo "# pull health checks" >&3
+  pull_health_checks
+  echo "# push health checks" >&3
+  push_health_checks
+}
