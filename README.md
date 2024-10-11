@@ -2,7 +2,7 @@
 
 The [Ibexa Cloud](https://www.ibexa.co/products/ibexa-cloud) has its own CLI, instead of using the `platform` CLI.
 
-This add-on provides integration for Ibexa Cloud.
+This add-on provides integration for Ibexa Cloud and adds the `ddev ibexa_cloud` custom command.
 
 1. Configure your Ibexa project for DDEV if you haven't already, see [DDEV Ibexa Quickstart](https://ddev.readthedocs.io/en/stable/users/quickstart/#ibexa-dxp)
 2. `ddev get rfay/ddev-ibexa-cloud` (# or in DDEV v1.23.5+ `ddev add-on get rfay/ddev-ibexa-cloud`)
