@@ -34,11 +34,11 @@ jobs:
     environment: base
     env:
       IBEXA_CLI_TOKEN: ${{ secrets.IBEXA_CLI_TOKEN }}
-      # IBEXA_PROJECT and IBEXA_ENVIRONMENT are automatically inherited
+      IBEXA_PROJECT: ${{ vars.IBEXA_PROJECT }}
     steps:
       - name: environment check
         run: |
-          echo "IBEXA_PROJECT=${IBEXA_PROJECT} IBEXA_ENVIRONMENT=${IBEXA_ENVIRONMENT}"
+          echo "IBEXA_PROJECT=${IBEXA_PROJECT}"
       - uses: ddev/github-action-add-on-test@v2
         with:
           ddev_version: ${{ matrix.ddev_version }}
