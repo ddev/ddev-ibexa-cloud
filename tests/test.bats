@@ -34,16 +34,15 @@ push_health_checks() {
   # Add a junk value into local database so we can test it arrives in push environment
   ddev mysql -e "INSERT INTO ezpage_zones VALUES(18, 'junk');"
   # make sure it doesn't already exist upstream
-  ibexa_cloud db:sql -p ${IBEXA_PROJECT} -e push -- "DELETE from ezpage_zones;"
-  run echo "this is a test"
-  run ibexa_cloud db:sql -p ${IBEXA_PROJECT} -e push -- "SELECT COUNT(*) FROM ezpage_zones WHERE id=18;"
-  assert_line --index 3 --regexp "^ *\| *0 *\|.*"
+  ddev ibexa_cloud db:sql -p ${IBEXA_PROJECT} -e push -- 'DELETE from ezpage_zones;'
+  run ddev ibexa_cloud db:sql -p ${IBEXA_PROJECT} -e push -- 'SELECT COUNT(*) FROM ezpage_zones WHERE id=18;'
+  assert_line --index 1 --regexp "^ *0 *"
 
   # Add a junk file into local mount so we can test it arrives in push
-  run ibexa_cloud ssh -p ${IBEXA_PROJECT} -e push -- rm -f var/encore/junk.txt
+  run ddev ibexa_cloud ssh -p ${IBEXA_PROJECT} -e push -- rm -f var/encore/junk.txt
   assert_success
   # Verify that it doesn't exist to start with
-  run ibexa_cloud ssh -p ${IBEXA_PROJECT} -e push ls var/encore/junk.txt
+  run ddev ibexa_cloud ssh -p ${IBEXA_PROJECT} -e push ls var/encore/junk.txt
   assert_failure
   touch ${TESTDIR}/var/encore/junk.txt
   ddev mutagen sync
@@ -51,10 +50,10 @@ push_health_checks() {
   run ddev push ibexa-cloud --environment=IBEXA_ENVIRONMENT=push -y
   assert_success
   # Verify that our new record now exists
-  run ibexa_cloud db:sql -p ${IBEXA_PROJECT} -e push -- "SELECT name FROM ezpage_zones WHERE id=18;"
+  run ddev ibexa_cloud db:sql -p ${IBEXA_PROJECT} -e push -- 'SELECT name FROM ezpage_zones WHERE id=18;'
   assert_output --partial junk
   # Verify the new file exists
-  run ibexa_cloud ssh -p ${IBEXA_PROJECT} -e push ls var/encore/junk.txt
+  run ddev ibexa_cloud ssh -p ${IBEXA_PROJECT} -e push ls var/encore/junk.txt
   assert_success
 }
 
