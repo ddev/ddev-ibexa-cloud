@@ -14,6 +14,7 @@ This add-on provides integration for Ibexa Cloud.
 ## Running Automated Tests Locally
 
 * `IBEXA_CLI_TOKEN`, `IBEXA_PROJECT` and `IBEXA_ENVIRONMENT` should exist in the environment
+* `brew tap kaos/shell && brew install bats-assert bats-file`
 
 
 **Contributed and maintained by @rfay**
