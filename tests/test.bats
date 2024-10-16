@@ -31,29 +31,32 @@ pull_health_checks() {
 }
 push_health_checks() {
   # set -x
-  # Add a junk value into local database so we can test it arrives in push environment
-  ddev mysql -e "INSERT INTO ezpage_zones VALUES(18, 'junk');"
+  # Add a new value into local database so we can test it arrives in push environment
+  ddev mysql -e "INSERT INTO ezpage_zones VALUES(18, 'push-mysql-insertion');"
+  run ddev mysql -e "SELECT name FROM ezpage_zones WHERE id=18;"
+  assert_success
+  assert_output --partial "push-mysql-insertion"
   # make sure it doesn't already exist upstream
   ddev ibexa_cloud db:sql -p ${IBEXA_PROJECT} -e push -- 'DELETE from ezpage_zones;'
   run ddev ibexa_cloud db:sql -p ${IBEXA_PROJECT} -e push -- 'SELECT COUNT(*) FROM ezpage_zones WHERE id=18;'
   assert_line --index 1 --regexp "^ *0 *"
 
-  # Add a junk file into local mount so we can test it arrives in push
-  run ddev ibexa_cloud ssh -p ${IBEXA_PROJECT} -e push -- rm -f var/encore/junk.txt
+  # Add a spare file into local mount so we can test it arrives in push
+  run ddev ibexa_cloud ssh -p ${IBEXA_PROJECT} -e push -- rm -f var/encore/files-push-test.txt
   assert_success
   # Verify that it doesn't exist to start with
-  run ddev ibexa_cloud ssh -p ${IBEXA_PROJECT} -e push -- ls var/encore/junk.txt
+  run ddev ibexa_cloud ssh -p ${IBEXA_PROJECT} -e push -- ls var/encore/files-push-test.txt
   assert_failure
-  touch ${TESTDIR}/var/encore/junk.txt
+  touch ${TESTDIR}/var/encore/files-push-test.txt
   ddev mutagen sync
 
   run ddev push ibexa-cloud --environment=IBEXA_ENVIRONMENT=push -y
   assert_success
   # Verify that our new record now exists
   run ddev ibexa_cloud db:sql -p ${IBEXA_PROJECT} -e push -- 'SELECT name FROM ezpage_zones WHERE id=18;'
-  assert_output --partial junk
+  assert_output --partial push-mysql-insertion
   # Verify the new file exists
-  run ddev ibexa_cloud ssh -p ${IBEXA_PROJECT} -e push -- ls var/encore/junk.txt
+  run ddev ibexa_cloud ssh -p ${IBEXA_PROJECT} -e push -- ls var/encore/files-push-test.txt
   assert_success
 }
 
