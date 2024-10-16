@@ -28,7 +28,7 @@ jobs:
     strategy:
       matrix:
         ddev_version: [stable, HEAD]
-        max-parallel: 1
+      max-parallel: 1
       fail-fast: false
 
     runs-on: ubuntu-latest
