@@ -43,7 +43,7 @@ auth_command:
     if [ -z "${IBEXA_CLI_TOKEN:-}" ]; then echo "Please make sure you have set IBEXA_CLI_TOKEN." && exit 1; fi
     if [ -z "${IBEXA_PROJECT:-}" ]; then echo "Please make sure you have set IBEXA_PROJECT." && exit 1; fi
     if [ -z "${IBEXA_ENVIRONMENT:-}" ]; then echo "Please make sure you have set IBEXA_ENVIRONMENT." && exit 1; fi
-    ibexa_cloud environment:activate -p ${IBEXA_PROJECT} ${IBEXA_ENVIRONMENT} 2>/dev/null || true
+    ibexa_cloud environment:resume -p ${IBEXA_PROJECT} -e ${IBEXA_ENVIRONMENT} 2>/dev/null || true
 
 db_pull_command:
   command: |
