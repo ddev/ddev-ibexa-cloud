@@ -1,6 +1,4 @@
-
 name: ibexa-cloud
-pre_install_actions:
 
 project_files:
   - commands/web/ibexa_cloud
@@ -8,11 +6,4 @@ project_files:
   - providers/ibexa-cloud.yaml
   - web-build/Dockerfile.ibexa-cloud
 
-global_files:
-dependencies:
-
-post_install_actions:
-removal_actions:
-
-yaml_read_files:
-
+ddev_version_constraint: '>= v1.24.3'
