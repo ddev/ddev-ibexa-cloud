@@ -1,21 +1,44 @@
+#!/usr/bin/env bats
+
+# Bats is a testing framework for Bash
+# Documentation https://bats-core.readthedocs.io/en/stable/
+# Bats libraries documentation https://github.com/ztombol/bats-docs
+
+# For local tests, install bats-core, bats-assert, bats-file, bats-support
+# And run this in the add-on root directory:
+#   bats ./tests/test.bats
+# To exclude release tests:
+#   bats ./tests/test.bats --filter-tags '!release'
+# For debugging:
+#   bats ./tests/test.bats --show-output-of-passing-tests --verbose-run --print-output-on-failure
+
 setup() {
-  # set -u does not work with bats-assert
-  set -e -o pipefail
-  TEST_BREW_PREFIX="$(brew --prefix)"
-  load "${TEST_BREW_PREFIX}/lib/bats-support/load.bash"
-  load "${TEST_BREW_PREFIX}/lib/bats-assert/load.bash"
-  load "${TEST_BREW_PREFIX}/lib/bats-file/load.bash"
+  set -eu -o pipefail
 
+  # Override this variable for your add-on:
+  export GITHUB_REPO=ddev/ddev-ibexa-cloud
 
-  export DIR="$( cd "$( dirname "$BATS_TEST_FILENAME" )" >/dev/null 2>&1 && pwd )/.."
-  export TESTDIR=~/tmp/test-ibexa-cloud
-  mkdir -p $TESTDIR
-  export PROJNAME=test-ibexa-cloud
+  TEST_BREW_PREFIX="$(brew --prefix 2>/dev/null || true)"
+  export BATS_LIB_PATH="${BATS_LIB_PATH}:${TEST_BREW_PREFIX}/lib:/usr/lib/bats"
+  bats_load_library bats-assert
+  bats_load_library bats-file
+  bats_load_library bats-support
+
+  export DIR="$(cd "$(dirname "${BATS_TEST_FILENAME}")/.." >/dev/null 2>&1 && pwd)"
+  export PROJNAME="test-$(basename "${GITHUB_REPO}")"
+  mkdir -p ~/tmp
+  export TESTDIR=$(mktemp -d ~/tmp/${PROJNAME}.XXXXXX)
   export DDEV_NONINTERACTIVE=true
-  ddev delete -Oy ${PROJNAME} >/dev/null 2>&1 || true
+  export DDEV_NO_INSTRUMENTATION=true
+  ddev delete -Oy "${PROJNAME}" >/dev/null 2>&1 || true
   cd "${TESTDIR}"
-  ddev config --project-name=${PROJNAME}
+  run ddev config --project-name="${PROJNAME}" --project-tld=ddev.site
+  assert_success
+
   cp -r ${DIR}/tests/testdata/.platform.app.yaml ${DIR}/tests/testdata/.platform ${TESTDIR}
+
+  run ddev start -y
+  assert_success
 }
 
 pull_health_checks() {
@@ -29,6 +52,7 @@ pull_health_checks() {
   ddev mutagen sync
   assert_file_exist "${TESTDIR}/var/encore/ibexa.richtext.config.manager.js"
 }
+
 push_health_checks() {
   # set -x
   # Add a new value into local database so we can test it arrives in push environment
@@ -62,21 +86,25 @@ push_health_checks() {
 
 teardown() {
   set -eu -o pipefail
-  cd ${TESTDIR} || ( printf "unable to cd to ${TESTDIR}\n" && exit 1 )
   ddev delete -Oy ${PROJNAME} >/dev/null 2>&1
   [ "${TESTDIR}" != "" ] && rm -rf ${TESTDIR}
 }
 
 @test "install from directory" {
-  # bats-assert doesn't work with set -u
-  set -e -o pipefail
-  cd ${TESTDIR}
-  echo "# ddev get ${DIR} with project ${PROJNAME} in ${TESTDIR} ($(pwd))" >&3
-  ddev get ${DIR}
-  ddev config --web-environment=IBEXA_CLI_TOKEN=${IBEXA_CLI_TOKEN},IBEXA_PROJECT=${IBEXA_PROJECT},IBEXA_ENVIRONMENT=pull
-  ddev restart >/dev/null
+  set -eu -o pipefail
+  echo "# ddev add-on get ${DIR} with project ${PROJNAME} in $(pwd)" >&3
+  run ddev add-on get "${DIR}"
+  assert_success
+
+  run ddev config --web-environment=IBEXA_CLI_TOKEN=${IBEXA_CLI_TOKEN},IBEXA_PROJECT=${IBEXA_PROJECT},IBEXA_ENVIRONMENT=pull
+  assert_success
+
+  run ddev restart -y
+  assert_success
+
   echo "# pull health checks" >&3
   pull_health_checks
+
   echo "# push health checks" >&3
   push_health_checks
 }
@@ -84,13 +112,19 @@ teardown() {
 # bats test_tags=release
 @test "install from release" {
   set -eu -o pipefail
-  cd ${TESTDIR} || ( printf "unable to cd to ${TESTDIR}\n" && exit 1 )
-  echo "# ddev get ddev/ddev-ibexa-cloud with project ${PROJNAME} in ${TESTDIR} ($(pwd))" >&3
-  ddev get ddev/ddev-ibexa-cloud
-  ddev config --web-environment=IBEXA_CLI_TOKEN=${IBEXA_CLI_TOKEN},IBEXA_PROJECT=${IBEXA_PROJECT:-},IBEXA_ENVIRONMENT=pull
-  ddev restart >/dev/null
+  echo "# ddev add-on get ${GITHUB_REPO} with project ${PROJNAME} in $(pwd)" >&3
+  run ddev add-on get "${GITHUB_REPO}"
+  assert_success
+
+  run ddev config --web-environment=IBEXA_CLI_TOKEN=${IBEXA_CLI_TOKEN},IBEXA_PROJECT=${IBEXA_PROJECT},IBEXA_ENVIRONMENT=pull
+  assert_success
+
+  run ddev restart -y
+  assert_success
+
   echo "# pull health checks" >&3
   pull_health_checks
+
   echo "# push health checks" >&3
   push_health_checks
 }
