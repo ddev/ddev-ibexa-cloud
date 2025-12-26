@@ -6,4 +6,4 @@ project_files:
   - providers/ibexa-cloud.yaml
   - web-build/Dockerfile.ibexa-cloud
 
-ddev_version_constraint: '>= v1.24.3'
+ddev_version_constraint: '>= v1.24.10'
