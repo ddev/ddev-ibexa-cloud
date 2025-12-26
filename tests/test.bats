@@ -46,9 +46,9 @@ pull_health_checks() {
   rm -rf ${TESTDIR}/var/encore/*
   run ddev pull ibexa-cloud -y
   assert_success
-  run ddev mysql -e 'SELECT COUNT(*) from ezpage_zones;'
+  run ddev mysql -e 'SELECT COUNT(*) from dummy_table;'
   assert_success
-  assert_line --index 1 "13"
+  assert_line --index 1 "3"
   ddev mutagen sync
   assert_file_exist "${TESTDIR}/var/encore/ibexa.richtext.config.manager.js"
 }
@@ -56,14 +56,16 @@ pull_health_checks() {
 push_health_checks() {
   # set -x
   # Add a new value into local database so we can test it arrives in push environment
-  ddev mysql -e "INSERT INTO ezpage_zones VALUES(18, 'push-mysql-insertion');"
-  run ddev mysql -e "SELECT name FROM ezpage_zones WHERE id=18;"
+  run ddev mysql -e "INSERT INTO dummy_table VALUES(9999, 'dummy-name', 22);"
   assert_success
-  assert_output --partial "push-mysql-insertion"
+  run ddev mysql -e "SELECT name FROM dummy_table WHERE id=9999;"
+  assert_success
+  assert_output --partial "dummy-name"
   # make sure it doesn't already exist upstream
-  ddev ibexa_cloud db:sql -p ${IBEXA_PROJECT} -e push -- 'DELETE from ezpage_zones;'
-  run ddev ibexa_cloud db:sql -p ${IBEXA_PROJECT} -e push -- 'SELECT COUNT(*) FROM ezpage_zones WHERE id=18;'
-  assert_line --index 1 --regexp "^ *0 *"
+  run ddev ibexa_cloud db:sql -p ${IBEXA_PROJECT} -e push -- 'DROP TABLE IF EXISTS dummy_table;'
+  assert_success
+  run ddev ibexa_cloud db:sql -p ${IBEXA_PROJECT} -e push -- 'SHOW TABLES like "dummy_table";'
+  assert_success
 
   # Add a spare file into local mount so we can test it arrives in push
   run ddev ibexa_cloud ssh -p ${IBEXA_PROJECT} -e push -- rm -f var/encore/files-push-test.txt
@@ -77,8 +79,8 @@ push_health_checks() {
   run ddev push ibexa-cloud --environment=IBEXA_ENVIRONMENT=push -y
   assert_success
   # Verify that our new record now exists
-  run ddev ibexa_cloud db:sql -p ${IBEXA_PROJECT} -e push -- 'SELECT name FROM ezpage_zones WHERE id=18;'
-  assert_output --partial push-mysql-insertion
+  run ddev ibexa_cloud db:sql -p ${IBEXA_PROJECT} -e push -- 'SELECT name FROM dummy_table WHERE id=9999;'
+  assert_output --partial dummy-name
   # Verify the new file exists
   run ddev ibexa_cloud ssh -p ${IBEXA_PROJECT} -e push -- ls var/encore/files-push-test.txt
   assert_success
