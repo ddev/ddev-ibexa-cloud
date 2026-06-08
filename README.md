@@ -49,7 +49,7 @@ After installation, make sure to commit the `.ddev` directory to version control
 ## Running Automated Tests Locally
 
 * `IBEXA_CLI_TOKEN`, `IBEXA_PROJECT` and `IBEXA_ENVIRONMENT` should exist in the environment
-* `brew tap kaos/shell && brew install bats-assert bats-file`
+* `brew install bats-core bats-core/bats-core/bats-assert bats-core/bats-core/bats-file bats-core/bats-core/bats-support`
 
 ## Credits
 
