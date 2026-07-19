@@ -1,3 +1,2 @@
 #ddev-generated
-ENV PLATFORMSH_CLI_HOME=/usr/local/bin
 RUN curl -sfS https://cli.ibexa.cloud/installer | sh
