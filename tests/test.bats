@@ -61,6 +61,10 @@ push_health_checks() {
   run ddev mysql -e "SELECT name FROM dummy_table WHERE id=9999;"
   assert_success
   assert_output --partial "dummy-name"
+  # The push environment is auto-paused when idle; the provider's auth_command only
+  # resumes it during `ddev push`, but we access it directly below before that.
+  run ddev exec "IBEXA_CLI_NO_INTERACTION=1 ibexa_cloud environment:resume -p ${IBEXA_PROJECT} -e push 2>/dev/null || true"
+  assert_success
   # make sure it doesn't already exist upstream
   run ddev ibexa_cloud db:sql -p ${IBEXA_PROJECT} -e push -- 'DROP TABLE IF EXISTS dummy_table;'
   assert_success
